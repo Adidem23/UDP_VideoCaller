@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="jna-3.1.0.jar"/>
+	<classpathentry kind="lib" path="jna-3.3.0-platform.jar"/>
+	<classpathentry kind="lib" path="vlcj-3.0.1-dist/vlcj-3.0.1-dist/vlcj-3.0.1/jna-3.5.2.jar"/>
+	<classpathentry kind="lib" path="vlcj-3.0.1-dist/vlcj-3.0.1-dist/vlcj-3.0.1/platform-3.5.2.jar"/>
+	<classpathentry kind="lib" path="vlcj-3.0.1-dist/vlcj-3.0.1-dist/vlcj-3.0.1/vlcj-3.0.1.jar"/>
+	<classpathentry kind="lib" path="vlcj-3.0.1-dist/vlcj-3.0.1-dist/vlcj-3.0.1/vlcj-3.0.1-javadoc.jar"/>
+	<classpathentry kind="lib" path="vlcj-3.0.1-dist/vlcj-3.0.1-dist/vlcj-3.0.1/vlcj-3.0.1-sources.jar"/>
+	<classpathentry kind="lib" path="vlcj-3.0.1-dist/vlcj-3.0.1-dist/vlcj-3.0.1/vlcj-3.0.1-tests.jar"/>
+	<classpathentry kind="lib" path="vlcj-3.0.1-dist/vlcj-3.0.1-dist/vlcj-3.0.1/vlcj-3.0.1-test-sources.jar"/>
+	<classpathentry kind="lib" path="C:/Users/hp/Downloads/Java-UDP-Video-Stream-Server/vlcj-3.0.1-dist/vlcj-3.0.1-dist/vlcj-3.0.1/vlcj-3.0.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/hp/Downloads/webcam-capture-0.3.12-dist/webcam-capture-0.3.12.jar"/>
+	<classpathentry kind="lib" path="C:/Users/hp/Downloads/webcam-capture-0.3.12-dist/slf4j-api-1.7.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/hp/Downloads/webcam-capture-0.3.12-dist/bridj-0.7.0.jar"/>
+	<classpathentry kind="output" path="build/classes"/>
+</classpath>
