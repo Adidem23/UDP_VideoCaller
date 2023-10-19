@@ -4,15 +4,12 @@ import com.github.sarxos.webcam.Webcam;
 import com.sun.jna.Native;
 
 import java.io.*;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.*;
 import javax.imageio.ImageIO;
 
 import javax.sound.sampled.*;
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 
 import com.sun.jna.NativeLibrary;
 import com.sun.jna.platform.win32.WinUser.POINT;
@@ -33,6 +30,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
+import java.util.concurrent.TimeUnit;
 
 import static java_video_stream.JavaServer.getImage;
 
@@ -42,6 +40,7 @@ public class JavaServer {
 	 * @param args
 	 *            the command line arguments
 	 */
+
 	public static InetAddress[] inet;
 	public static int[] port;
 
@@ -55,7 +54,6 @@ public class JavaServer {
 	
 	public static void main(String[] args) throws Exception
 	{
-
 		webcam.open();
 		JavaServer jv = new JavaServer();
 	}
@@ -66,8 +64,6 @@ public class JavaServer {
 		return bm;
 	}
 
-	
-	
 	public JavaServer() throws Exception {
 		
 		
@@ -80,7 +76,7 @@ public class JavaServer {
 		audport = new int[30];
 
 
-		// TODO code application logic here
+
 
 		ServerSocket welcomeSocket = new ServerSocket(6782);
 		System.out.println(welcomeSocket.isClosed());
@@ -93,18 +89,17 @@ public class JavaServer {
 
 		byte[] buf = new byte[62000];
 		byte[] bufaud = new byte[62000];
-		// Socket[] sc = new Socket[5];
+
 		DatagramPacket dp = new DatagramPacket(buf, buf.length);
 		DatagramPacket dpaud = new DatagramPacket(buf, buf.length);
 
-//		Canvas_Demo canv = new Canvas_Demo();
+
 		System.out.println("Gotcha");
 
 		OutputStream[] os = new OutputStream[5];
 
 		i = 0;
-		
-//		SThread[] st = new SThread[30];
+
 		
 
 		while (true) {
@@ -112,11 +107,10 @@ public class JavaServer {
 			System.out.println(serv.getPort());
 			serv.receive(dp);
 			servaud.receive(dpaud);
-
 			System.out.println(new String(dp.getData()));
 			System.out.println(new String(dpaud.getData()));
 			buf = "starts".getBytes();
-			bufaud = "startsaud".getBytes();
+			bufaud = "startsaudAdityaSuryawanshi".getBytes();
 
 			inet[i] = dp.getAddress();
 			port[i] = dp.getPort();
@@ -141,20 +135,25 @@ public class JavaServer {
 			outToClient[i] = new DataOutputStream(connectionSocket[i].getOutputStream());
 			outToClient[i].writeBytes("Connected: from Server\n");
 
-			
-//			st[i] = new SThread(i);
-//			st[i].start();
-			
-			if(count == 0)
-			{
-				Sentencefromserver sen = new Sentencefromserver();
-				sen.start();
-				count++;
-			}
-
 			System.out.println(inet[i]);
 			sendvid.start();
 			sendaud.start();
+
+			try {
+				TimeUnit.SECONDS.sleep(10);
+			} catch (InterruptedException e) {
+
+			}
+
+			Thread SendServVideoThread = new Thread(() -> {
+				SendServVideo ssv = new SendServVideo();
+				try {
+					ssv.main(new String[]{});
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			});
+			SendServVideoThread.start();
 
 			i++;
 
@@ -169,36 +168,25 @@ class Vidthread extends Thread {
 
 	int clientno;
 
-	// InetAddress iadd = InetAddress.getLocalHost();
-	JFrame jf = new JFrame("scrnshots before sending");
+	JFrame jf = new JFrame("Server Show");
 	JLabel jleb = new JLabel();
 
 	DatagramSocket soc;
 
 	Robot rb = new Robot();
-	// Toolkit tk = Toolkit.getDefaultToolkit();
-
-	// int x = tk.getScreenSize().height;
-	// int y = tk.getScreenSize().width;
 
 	byte[] outbuff = new byte[62000];
 
 	BufferedImage mybuf;
 	ImageIcon img;
-	Rectangle rc;
-	
-//	int bord = Canvas_Demo.panel.getY() - Canvas_Demo.frame.getY();
-	// Rectangle rc = new Rectangle(new
-	// Point(Canvas_Demo.frame.getX(),Canvas_Demo.frame.getY()),new
-	// Dimension(Canvas_Demo.frame.getWidth(),Canvas_Demo.frame.getHeight()));
 
-	// Rectangle rv = new Rectangle(d);
+	Rectangle rc;
+
 	public Vidthread(DatagramSocket ds) throws Exception {
 		soc = ds;
-
 		System.out.println(soc.getPort());
-		jf.setSize(500, 400);
-		jf.setLocation(500, 400);
+		jf.setSize(500, 600);
+		jf.setLocation(1000, 500);
 		jf.setVisible(true);
 	}
 
@@ -207,21 +195,16 @@ class Vidthread extends Thread {
 			try {
 
 				int num = JavaServer.i;
-
-//				rc = new Rectangle(new Point(Canvas_Demo.frame.getX() + 8, Canvas_Demo.frame.getY() + 27),
-//						new Dimension(Canvas_Demo.panel.getWidth(), Canvas_Demo.frame.getHeight() / 2));
-
-				// System.out.println("another frame sent ");
-
 				mybuf =getImage();
-
 				img = new ImageIcon(mybuf);
 
 				jleb.setIcon(img);
+				jleb.setSize(25,25);
+				LineBorder border = new LineBorder(Color.BLACK, 2);
+				jleb.setBorder(border);
 				jf.add(jleb);
 				jf.repaint();
 				jf.revalidate();
-				// jf.setVisible(true);
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				
 				ImageIO.write(mybuf, "jpg", baos);
@@ -231,15 +214,11 @@ class Vidthread extends Thread {
 				for (int j = 0; j < num; j++) {
 					DatagramPacket dp = new DatagramPacket(outbuff, outbuff.length, JavaServer.inet[j],
 							JavaServer.port[j]);
-					//System.out.println("Frame Sent to: " + JavaServer.inet[j] + " port: " + JavaServer.port[j]
-						//	+ " size: " + baos.toByteArray().length);
 					soc.send(dp);
 					baos.flush();
 				}
 				Thread.sleep(15);
 
-				// baos.flush();
-				// byte[] buffer = baos.toByteArray();
 			} catch (Exception e) {
 
 			}
@@ -249,278 +228,49 @@ class Vidthread extends Thread {
 
 }
 //AudThread
-
 class Audthread extends Thread {
 
 	int clientno;
 
-	// InetAddress iadd = InetAddress.getLocalHost();
-//	JFrame jf = new JFrame("scrnshots before sending");
-//	JLabel jleb = new JLabel();
-
 	DatagramSocket socaud;
-
-	//Robot rb = new Robot();
-	// Toolkit tk = Toolkit.getDefaultToolkit();
-
-	// int x = tk.getScreenSize().height;
-	// int y = tk.getScreenSize().width;
 
 	byte[] outbuffaud = new byte[62000];
 
 	BufferedImage mybuf;
 
-//	ImageIcon img;
-//	Rectangle rc;
-
-	//int bord = Canvas_Demo.panel.getY() - Canvas_Demo.frame.getY();
-	// Rectangle rc = new Rectangle(new
-	// Point(Canvas_Demo.frame.getX(),Canvas_Demo.frame.getY()),new
-	// Dimension(Canvas_Demo.frame.getWidth(),Canvas_Demo.frame.getHeight()));
-
-	// Rectangle rv = new Rectangle(d);
 	public Audthread(DatagramSocket dsaud) throws Exception {
 		socaud = dsaud;
 		System.out.println(socaud.getPort());
-//		jf.setSize(500, 400);
-//		jf.setLocation(500, 400);
-//		jf.setVisible(true);
 	}
 
 	public void run() {
 		while (true) {
 			try {
-				int num = JavaServer.i;
+
 				AudioFormat format = new AudioFormat(44100, 16, 1, true, false);
 				DataLine.Info info = new DataLine.Info(TargetDataLine.class, format);
 				TargetDataLine line = (TargetDataLine) AudioSystem.getLine(info);
 				line.open(format);
 				line.start();
 
-			//	socket = new DatagramSocket();
-
 				System.out.println("Server is sending audio...");
 				while (true) {
 					byte[] data = new byte[1024];
 					int bytesRead = line.read(data, 0, data.length);
-					for (int j = 0; j < num; j++) {
-//						DatagramPacket dp = new DatagramPacket(outbuff, outbuff.length, JavaServer.inet[j],
-//								JavaServer.port[j]);
-						//System.out.println("Frame Sent to: " + JavaServer.inet[j] + " port: " + JavaServer.port[j]
-						//	+ " size: " + baos.toByteArray().length);
-						DatagramPacket packet = new DatagramPacket(data, bytesRead, JavaServer.audinet[j], JavaServer.audport[j]);
-						socaud.send(packet);
-						//socaud.send(dp);
-					//	data.flush();
+					System.out.println("Audio Server");
+					DatagramPacket packet = new DatagramPacket(data, bytesRead, InetAddress.getByName("192.168.117.32"), 54321);
+					socaud.send(packet);
 					}
-				}
-			} catch (LineUnavailableException | IOException e) {
-				e.printStackTrace();
-			}
+				} catch (UnknownHostException e) {
+                throw new RuntimeException(e);
+            } catch (LineUnavailableException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
 
 		}
 
 	}
 
-}
-
-//class Canvas_Demo {
-//
-//	// Create a media player factory
-//	private MediaPlayerFactory mediaPlayerFactory;
-//
-//	// Create a new media player instance for the run-time platform
-//	private EmbeddedMediaPlayer mediaPlayer;
-//
-//	public static JPanel panel;
-//	public static JPanel myjp;
-//	private Canvas canvas;
-//	public static JFrame frame;
-//	public static JTextArea ta;
-//	public static JTextArea txinp;
-//	public static int xpos = 0, ypos = 0;
-//	String url = "D:\\DownLoads\\Video\\freerun.MP4";
-//
-//	// Constructor
-//	public Canvas_Demo() {
-//
-//		// Creating a panel that while contains the canvas
-//		panel = new JPanel();
-//		panel.setLayout(new BorderLayout());
-//
-//		JPanel mypanel = new JPanel();
-//		mypanel.setLayout(new GridLayout(2, 1));
-//
-//		// Creating the canvas and adding it to the panel :
-//		canvas = new Canvas();
-//		canvas.setBackground(Color.BLACK);
-//		// canvas.setSize(640, 480);
-//		panel.add(canvas, BorderLayout.CENTER);
-//		// panel.revalidate();
-//		// panel.repaint();
-//
-//		// Creation a media player :
-//		mediaPlayerFactory = new MediaPlayerFactory();
-//		mediaPlayer = mediaPlayerFactory.newEmbeddedMediaPlayer();
-//		CanvasVideoSurface videoSurface = mediaPlayerFactory.newVideoSurface(canvas);
-//		mediaPlayer.setVideoSurface(videoSurface);
-//
-//		// Construction of the jframe :
-//		frame = new JFrame("Imran & Ashik Player");
-//		// frame.setLayout(null);
-//		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//		frame.setLocation(200, 0);
-//		frame.setSize(640, 960);
-//		frame.setAlwaysOnTop(true);
-//
-//		// Adding the panel to the
-//		// panel.setSize(940, 480);
-//		// mypanel.setLayout(new BorderLayout());
-//		mypanel.add(panel);
-//		frame.add(mypanel);
-//		frame.setVisible(true);
-//		xpos = frame.getX();
-//		ypos = frame.getY();
-//
-//		// Playing the video
-//
-//		myjp = new JPanel(new GridLayout(4, 1));
-//
-//		Button bn = new Button("Choose File");
-//		myjp.add(bn);
-//		Button sender = new Button("Send Text");
-//
-//		JScrollPane jpane = new JScrollPane();
-//		jpane.setSize(300, 200);
-//		// ta.setEditable(false);
-//		ta = new JTextArea();
-//		txinp = new JTextArea();
-//		jpane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-//		jpane.add(ta);
-//		jpane.setViewportView(ta);
-//		myjp.add(jpane);
-//		myjp.add(txinp);
-//		myjp.add(sender);
-//		ta.setText("Initialized");
-//
-//		ta.setCaretPosition(ta.getDocument().getLength());
-//
-//		mypanel.add(myjp);
-//		mypanel.revalidate();
-//		mypanel.repaint();
-//
-//		// textArea.setPreferredSize(new Dimension(500, 100));
-//		// textArea.setEditable(false);
-//		// textArea.setLineWrap(true);
-//		// textArea.setWrapStyleWord(true);
-//
-//		// JScrollPane scroller = new JScrollPane(textArea);
-//		// scroller.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-//
-//		// textArea.append(" tuighadha\n");
-//		// textArea.setCaretPosition(textArea.getDocument().getLength());
-//
-//		// myjp.add(textArea);
-//		// myjp.
-//
-//		bn.addActionListener(new ActionListener() {
-//
-//			@Override
-//			public void actionPerformed(ActionEvent e) {
-//				// TODO Auto-generated method stub
-//				JFileChooser jf = new JFileChooser();
-//				jf.showOpenDialog(frame);
-//				File f;
-//				f = jf.getSelectedFile();
-//				url = f.getPath();
-//				System.out.println(url);
-//				ta.setText("check text\n");
-//				ta.append(url+"\n");
-//				mediaPlayer.playMedia(url);
-//			}
-//		});
-//		sender.addActionListener(new ActionListener() {
-//
-//			@Override
-//			public void actionPerformed(ActionEvent e) {
-//				// TODO Auto-generated method stub
-//				Sentencefromserver.sendingSentence = txinp.getText();
-//				txinp.setText(null);
-//				Canvas_Demo.ta.append("From Myself: " + Sentencefromserver.sendingSentence + "\n");
-//				Canvas_Demo.myjp.revalidate();
-//				Canvas_Demo.myjp.repaint();
-//			}
-//		});
-//
-//	}
-//}
-
-//class SThread extends Thread {
-//
-//	public static String clientSentence;
-//	int srcid;
-//	BufferedReader inFromClient = JavaServer.inFromClient[srcid];
-//	DataOutputStream outToClient[] = JavaServer.outToClient;
-//
-//	public SThread(int a) {
-//		srcid = a;
-//		// start();
-//		// fowl fl = new fowl(inFromClient, srcid);
-//		// fl.start();
-//	}
-//
-//	public void run() {
-//		while (true) {
-//			try {
-//
-//				clientSentence = inFromClient.readLine();
-//				// clientSentence = inFromClient.readLine();
-//
-//				System.out.println("From Client " + srcid + ": " + clientSentence);
-//				Canvas_Demo.ta.append("From Client " + srcid + ": " + clientSentence + "\n");
-//
-//				for(int i=0; i<JavaServer.i; i++){
-//
-//                    if(i!=srcid)
-//                        outToClient[i].writeBytes("Client "+srcid+": "+clientSentence + '\n');	//'\n' is necessary
-//                }
-//
-//				Canvas_Demo.myjp.revalidate();
-//				Canvas_Demo.myjp.repaint();
-//
-//					} catch (Exception e) {
-//			}
-//
-//		}
-//	}
-//}
-
-class Sentencefromserver extends Thread {
-	
-	public static String sendingSentence;
-	
-	public Sentencefromserver() {
-
-	}
-
-	public void run() {
-
-		while (true) {
-
-			try {
-
-				if(sendingSentence.length()>0)
-				{
-					for (int i = 0; i < JavaServer.i; i++) {
-						JavaServer.outToClient[i].writeBytes("From Server: "+sendingSentence+'\n');
-						
-					}
-					sendingSentence = null;
-				}
-
-			} catch (Exception e) {
-
-			}
-		}
-	}
 }
